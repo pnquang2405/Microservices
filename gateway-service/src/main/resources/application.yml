@@ -1,0 +1,64 @@
+server:
+  port: 8082
+  error:
+    include-stacktrace: never
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/tutorials/**
+            - Method=POST, PUT, DELETE
+          filters:
+            - TestFilter
+        - id: auth-service_get
+          uri: lb://auth-service
+          predicates: 
+            - Path=/auth/**
+            - Method=GET, POST
+        - id: tutorials-service
+          uri: lb://tutorials-service
+          predicates: 
+            - Path=/api/**
+            - Method=POST, PUT, DELETE
+          filters:
+            - TestFilter
+    bus:
+      enabled: true
+      refresh:
+        enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest  
+management:
+  security:
+    enabled: false 
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+        
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG
+    
+      
+    
